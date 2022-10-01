@@ -1,6 +1,6 @@
 function [vn_llr_app, cn_llr_ext, iter_termi] = SPA_Layered_Decoding_m(H_dec, vn_llr_app, cn_llr_ext, iter_max, termi_method)
 
-    % Reference: MATLAB document of the built-in function ldpcDecode (R2021b+)
+    % Reference: Channel Codes Classical and Modern (Sec. 5.4.4)
 
     M = H_dec.M;
     dc_list = H_dec.dc_list;
@@ -17,14 +17,14 @@ function [vn_llr_app, cn_llr_ext, iter_termi] = SPA_Layered_Decoding_m(H_dec, vn
 
             for n = 1:dc_list(m)
                 vn_llr_app(cn_neighbor_idx(m, n)) = vn_llr_app(cn_neighbor_idx(m, n)) - cn_llr_ext(m, n);
-                A = A + psi_func(vn_llr_app(cn_neighbor_idx(m, n)));
+                A = A + phi_func(abs(vn_llr_app(cn_neighbor_idx(m, n))));
                 S = S * sign(vn_llr_app(cn_neighbor_idx(m, n)));
             end
 
             for n = 1:dc_list(m)
-                Amn = A - psi_func(vn_llr_app(cn_neighbor_idx(m, n)));
+                Amn = A - phi_func(abs(vn_llr_app(cn_neighbor_idx(m, n))));
                 Smn = S * sign(vn_llr_app(cn_neighbor_idx(m, n)));
-                cn_llr_ext(m, n) = -Smn * psi_func(Amn);
+                cn_llr_ext(m, n) = Smn * phi_func(Amn); % Amn > 0
                 vn_llr_app(cn_neighbor_idx(m, n)) = vn_llr_app(cn_neighbor_idx(m, n)) + cn_llr_ext(m, n);
             end
 
@@ -68,14 +68,14 @@ function [vn_llr_app, cn_llr_ext, iter_termi] = SPA_Layered_Decoding_m(H_dec, vn
 
 end
 
-function y = psi_func(x)
+function y = phi_func(x)
 
-    t = abs(tanh(x / 2));
+    t = tanh(x / 2);
 
     if t == 0
-        y = -38.14;
+        y = 38.14;
     else
-        y = log(t);
+        y = -log(t);
     end
 
 end

@@ -17,7 +17,7 @@
 const double eps = 1e-18;
 
 #define SIGN(x) (2 * ((x) > 0) - 1)
-#define PSI(x) (tanh(x / 2) > eps ? log(tanh(x / 2)) : -38.14)
+#define PHI(x) (tanh(x / 2) > eps ? -log(tanh(x / 2)) : 38.14)
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
@@ -62,7 +62,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                 int vn_idx = cn_neighbor_idx[m + n * M] - 1;
                 vn_llr_app[vn_idx] -= cn_llr_ext[m + n * M];
                 double tmp = abs(vn_llr_app[vn_idx]);
-                Amn_list[n] = PSI(tmp);
+                Amn_list[n] = PHI(tmp);
                 Smn_list[n] = SIGN(vn_llr_app[vn_idx]);
                 A += Amn_list[n];
                 S *= Smn_list[n];
@@ -72,7 +72,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             {
                 int vn_idx = cn_neighbor_idx[m + n * M] - 1;
                 double tmp = abs(A - Amn_list[n]);
-                cn_llr_ext[m + n * M] = -S * Smn_list[n] * PSI(tmp);
+                cn_llr_ext[m + n * M] = S * Smn_list[n] * PHI(tmp);
                 vn_llr_app[vn_idx] += cn_llr_ext[m + n * M];
             }
         }

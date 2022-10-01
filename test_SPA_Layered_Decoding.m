@@ -3,13 +3,13 @@ clear;
 addpath("SPA_Layered_Decoding/")
 
 % code parameters
-N = 648;
+N = 64800;
 R = 2/3;
 K = N * R;
 M = N - K;
 
-% H = dvbs2ldpc(R); % 64800
-H = IEEE80211n(N, R);
+H = dvbs2ldpc(R); % 64800
+% H = IEEE80211n(N, R);
 
 % built-in codec configuration
 enc_cfg = ldpcEncoderConfig(H);
