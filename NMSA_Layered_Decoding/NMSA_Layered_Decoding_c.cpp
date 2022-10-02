@@ -8,16 +8,16 @@
 #define CN_LLR_EXT prhs[2]
 #define ITER_MAX prhs[3]
 #define TERMI_METHOD prhs[4]
+#define ALPHA prhs[5]
 
 // Output Arguments
 #define VN_LLR_APP_OUT plhs[0]
 #define CN_LLR_EXT_OUT plhs[1]
 #define ITER_TERMI_OUT plhs[2]
 
-const double eps = 1e-18;
-
 #define SIGN(x) (2 * ((x) > 0) - 1)
-#define PHI(x) (tanh(x / 2) > eps ? -log(tanh(x / 2)) : 38.14)
+
+const double inf = 1e30;
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
@@ -26,7 +26,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
     int M, N, dc_max, iter_max, iter_termi = 0;
     int *dc_list, *cn_neighbor_idx;
-    double *vn_llr_app, *cn_llr_ext, *Amn_list;
+    double *vn_llr_app, *cn_llr_ext, *abs_list, alpha;
     int *codeword, *parity_checks, *Smn_list;
 
     M = (int)mxGetScalar(mxGetField(H_DEC, 0, "M"));
@@ -38,6 +38,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     vn_llr_app = mxGetDoubles(VN_LLR_APP_OUT);
     cn_llr_ext = mxGetDoubles(CN_LLR_EXT_OUT);
     iter_max = (int)mxGetScalar(ITER_MAX);
+    alpha = (double)mxGetScalar(ALPHA);
 
     int buff_len = mxGetNumberOfElements(TERMI_METHOD) + 1;
     char *termi_method = (char *)mxCalloc(buff_len, sizeof(char));
@@ -47,32 +48,48 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
     codeword = (int *)mxCalloc(N, sizeof(int));
     parity_checks = (int *)mxCalloc(M, sizeof(int));
-    Amn_list = (double *)mxCalloc(dc_max, sizeof(double));
+    abs_list = (double *)mxCalloc(dc_max, sizeof(double));
     Smn_list = (int *)mxCalloc(dc_max, sizeof(int));
 
     for (int iter_cnt = 0; iter_cnt < iter_max; ++iter_cnt)
     {
         for (int m = 0; m < M; ++m)
         {
-            double A = 0;
-            int S = 1;
+            int S = 1, min_idx = -1;
+            double min_val = inf, sub_min_val = inf;
 
             for (int n = 0; n < dc_list[m]; ++n)
             {
                 int vn_idx = cn_neighbor_idx[m + n * M] - 1;
                 vn_llr_app[vn_idx] -= cn_llr_ext[m + n * M];
-                double tmp = abs(vn_llr_app[vn_idx]);
-                Amn_list[n] = PHI(tmp);
                 Smn_list[n] = SIGN(vn_llr_app[vn_idx]);
-                A += Amn_list[n];
+                abs_list[n] = abs(vn_llr_app[vn_idx]);
+                if (abs_list[n] < min_val)
+                {
+                    min_val = abs_list[n];
+                    min_idx = n;
+                }
                 S *= Smn_list[n];
             }
 
             for (int n = 0; n < dc_list[m]; ++n)
             {
+                if (n == min_idx)
+                {
+                    continue;
+                }
                 int vn_idx = cn_neighbor_idx[m + n * M] - 1;
-                double tmp = abs(A - Amn_list[n]);
-                cn_llr_ext[m + n * M] = S * Smn_list[n] * PHI(tmp);
+                if (abs_list[n] < sub_min_val)
+                {
+                    sub_min_val = abs_list[n];
+                }
+            }
+
+            for (int n = 0; n < dc_list[m]; ++n)
+            {
+                int vn_idx = cn_neighbor_idx[m + n * M] - 1;
+                double tmp = n == min_idx ? sub_min_val : min_val;
+                cn_llr_ext[m + n * M] = S * Smn_list[n] * tmp * alpha;
                 vn_llr_app[vn_idx] += cn_llr_ext[m + n * M];
             }
         }
@@ -113,7 +130,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
     mxFree(codeword);
     mxFree(parity_checks);
-    mxFree(Amn_list);
+    mxFree(abs_list);
     mxFree(Smn_list);
     mxFree(termi_method);
 

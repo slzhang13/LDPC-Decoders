@@ -41,7 +41,7 @@ y = s + noise;
 % soft infomation from channel can be easily calculated for BPSK/QPSK
 Lch = 2 * y / sigma2;
 
-alpha = 0.7;
+alpha = 0.8;
 
 % preprocess PCM
 H_dec = H_preprocessing(H);
@@ -50,10 +50,14 @@ H_dec = H_preprocessing(H);
 % vn_llr_app_m = Lch;
 % vn_llr_app_c = Lch;
 cn_llr_ext_m = zeros(M, H_dec.dc_max);
-% cn_llr_ext_c = zeros(M, H_dec.dc_max);
+cn_llr_ext_c = zeros(M, H_dec.dc_max);
 
 tic
 [vn_llr_app_m, cn_llr_ext_m, iter_termi_m] = NMSA_Layered_Decoding_m(H_dec, Lch, cn_llr_ext_m, iter_max, termi_method, alpha);
+toc
+
+tic
+[vn_llr_app_c, cn_llr_ext_c, iter_termi_c] = NMSA_Layered_Decoding_c(H_dec, Lch, cn_llr_ext_c, iter_max, termi_method, alpha);
 toc
 
 tic
@@ -61,3 +65,4 @@ vn_llr_app_matlab = ldpcDecode(Lch, dec_cfg, iter_max, 'OutputFormat', 'whole', 
 toc
 
 norm(vn_llr_app_matlab - vn_llr_app_m)
+norm(vn_llr_app_matlab - vn_llr_app_c)
