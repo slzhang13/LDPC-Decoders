@@ -17,7 +17,7 @@
 const double eps = 1e-18;
 
 #define SIGN(x) (2 * ((x) > 0) - 1)
-#define PHI(x) (tanh(x / 2) > eps ? -log(tanh(x / 2)) : 38.14)
+#define PHI(x) (tanh((x) / 2) > eps ? -log(tanh((x) / 2)) : 38.14)
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
