@@ -1,6 +1,6 @@
 function [vn_llr_app, cn_llr_ext, iter_termi] = OMSA_Layered_Decoding_m(H_dec, vn_llr_app, cn_llr_ext, iter_max, termi_method, beta)
 
-    % Reference: Channel Codes Classical and Modern (Sec. 5.4.4)
+    % Reference: Channel Codes Classical and Modern (Sec. 5.5)
 
     M = H_dec.M;
     dc_list = H_dec.dc_list;
@@ -27,7 +27,7 @@ function [vn_llr_app, cn_llr_ext, iter_termi] = OMSA_Layered_Decoding_m(H_dec, v
 
             for n = 1:dc_list(m)
                 Smn = S * sign(vn_llr_app(cn_neighbor_idx(m, n)));
-                cn_llr_ext(m, n) = Smn * max(0, tmp(n)-beta);
+                cn_llr_ext(m, n) = Smn * max(0, tmp(n) - beta);
                 vn_llr_app(cn_neighbor_idx(m, n)) = vn_llr_app(cn_neighbor_idx(m, n)) + cn_llr_ext(m, n);
             end
 

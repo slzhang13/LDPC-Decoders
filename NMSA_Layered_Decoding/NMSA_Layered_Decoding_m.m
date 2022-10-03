@@ -1,6 +1,6 @@
 function [vn_llr_app, cn_llr_ext, iter_termi] = NMSA_Layered_Decoding_m(H_dec, vn_llr_app, cn_llr_ext, iter_max, termi_method, alpha)
 
-    % Reference: Channel Codes Classical and Modern (Sec. 5.4.4)
+    % Reference: Channel Codes Classical and Modern (Sec. 5.5)
 
     M = H_dec.M;
     dc_list = H_dec.dc_list;
