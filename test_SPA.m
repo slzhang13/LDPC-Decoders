@@ -1,6 +1,6 @@
 clear;
 
-addpath("SPA_Layered_Decoding/")
+addpath("SPA_Decoding/")
 
 % code parameters
 N = 64800;
@@ -18,7 +18,7 @@ dec_cfg = ldpcDecoderConfig(H, 'bp');
 termi_method = 'early';
 % termi_method = 'max';
 
-iter_max = 20;
+iter_max = 10;
 iter_max = int32(iter_max); % int32
 
 rng(12345); % reproducibility
@@ -31,7 +31,7 @@ c = ldpcEncode(b, enc_cfg);
 s = 1 - 2 * c;
 
 % AWGN
-snr_db = 3.5;
+snr_db = 3.0;
 snr = 10^(0.1 * snr_db);
 sigma2 = 1 / snr;
 noise = randn(size(s)) * sqrt(sigma2);
@@ -54,13 +54,13 @@ tic
 [vn_llr_app_m, cn_llr_ext_m, iter_termi_m] = SPA_m(H_dec, Lch, cn_llr_ext_m, iter_max, termi_method);
 toc
 
-% tic
-% [vn_llr_app_c, cn_llr_ext_c, iter_termi_c] = SPA_c(H_dec, Lch, cn_llr_ext_c, iter_max, termi_method);
-% toc
+tic
+[vn_llr_app_c, cn_llr_ext_c, iter_termi_c] = SPA_c(H_dec, Lch, cn_llr_ext_c, iter_max, termi_method);
+toc
 
 tic
 vn_llr_app_matlab = ldpcDecode(Lch, dec_cfg, iter_max, 'OutputFormat', 'whole', 'DecisionType', 'soft', 'Termination', termi_method);
 toc
 
 norm(vn_llr_app_matlab - vn_llr_app_m)
-% norm(vn_llr_app_matlab - vn_llr_app_c)
+norm(vn_llr_app_matlab - vn_llr_app_c)

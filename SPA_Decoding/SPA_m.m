@@ -11,8 +11,6 @@ function [vn_llr_app, cn_llr_ext, iter_termi] = SPA_m(H_dec, vn_llr_app, cn_llr_
 
     for iter_cnt = 1:iter_max
 
-        vn_llr_app_bak = vn_llr_app;
-
         vn_llr_ext = zeros(M, dc_max);
         S_list = ones(M, 1);
         A_list = zeros(M, 1);
@@ -21,9 +19,17 @@ function [vn_llr_app, cn_llr_ext, iter_termi] = SPA_m(H_dec, vn_llr_app, cn_llr_
 
             for n = 1:dc_list(m)
                 vn_idx = cn_neighbor_idx(m, n);
-                vn_llr_ext(m, n) = vn_llr_app_bak(vn_idx) - cn_llr_ext(m, n);
+                vn_llr_ext(m, n) = vn_llr_app(vn_idx) - cn_llr_ext(m, n);
                 S_list(m) = S_list(m) * sign(vn_llr_ext(m, n));
                 A_list(m) = A_list(m) + phi_func(abs(vn_llr_ext(m, n)));
+            end
+
+        end
+
+        for m = 1:M
+
+            for n = 1:dc_list(m)
+                vn_idx = cn_neighbor_idx(m, n);
                 vn_llr_app(vn_idx) = vn_llr_app(vn_idx) - cn_llr_ext(m, n);
             end
 
