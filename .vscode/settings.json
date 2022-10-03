@@ -2,6 +2,7 @@
     "files.associations": {
         "*.m": "matlab",
         "string": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "limits": "cpp"
     }
 }
